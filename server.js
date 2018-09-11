@@ -9,7 +9,7 @@ app.use(basicAuth({
 //app.get('/', (req, res) => {
 //  res.send('HEY!')
 //})
-app.use(express.static('demo'))
+app.use(express.static('client'))
 
 app.listen(8000, () => console.log('Server running on port 8000'))
 
