@@ -90,9 +90,7 @@ function startRecording() {
           gumStream.getAudioTracks()[0].stop();
           recordButton.disabled = false;
           recordButton.innerHTML = "Record";
-          var filename = rec.exportWAV(createDownloadLink);
-          getUploadUrl(filename);
-
+          rec.exportWAV(createDownloadLink);
     })();
   }, reason => {
     console.log("user denied the access");
@@ -107,7 +105,7 @@ function startRecording() {
 function getUploadUrl(filename) {
     var xhr = new XMLHttpRequest();
     xhr.onload = function(e) {
-      if(this.readState === 4) {
+      if(this.readyState === 4) {
         console.log('response:', this.responseText);
       }
     }
