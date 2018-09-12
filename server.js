@@ -1,16 +1,17 @@
 const express = require('express');
 var basicAuth = require('express-basic-auth');
 var bodyParser = require("body-parser");
-const app = express();
 var request = require('request');
+const app = express();
+var config = require('../.audio-recorder-conf/token.json')
 
-const accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MzY1ODk1MTYsImlkIjoiZjEwMjk0YTktMTc3NS00NGMyLThmMzgtOWYwOTEzNmYzM2IzIiwiZXhwIjoxNTUyMTQxNTE2fQ.4E2v0Yd7VE5NTfnWTRYH3CblRKMfYZM5ekWEeEGASto";
-
+const accessToken =  config.access_token;
 const apiUrl = "https://9k9kz5aqu0.execute-api.us-east-1.amazonaws.com/dev/presigned-upload";
 var headers = {
 	'authorization': 'Bearer '+ accessToken,
 	'accept': 'application/json',
-	'bucket': 'synaptics-training-data'
+	'bucket': 'synaptics-training-data',
+	'content-type': 'audio/wav'
 }
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -21,7 +22,8 @@ app.use(basicAuth({
     users: { 'yummly': 'openforme' }
 }));
 
-app.use('/static', express.static(path.join(__dirname, 'client')));
+app.use(express.static('client'))
+//app.use('/static', express.static(path.join(__dirname, 'client')));
 //app.get('/',function(req,res){
 //  res.sendFile('index.html', { root: __dirname  + '/client'});
 //});

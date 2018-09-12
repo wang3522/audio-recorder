@@ -12,6 +12,7 @@ var audioContext //audio context to help us record
 var recordButton = document.getElementById("recordButton");
 var uploadButton = document.getElementById("uploadButton");
 
+var upblob;
 
 window.onload = function () {
     if (isGetUserMediaSupported()) {
@@ -106,7 +107,8 @@ function getUploadUrl(filename) {
     var xhr = new XMLHttpRequest();
     xhr.onload = function(e) {
       if(this.readyState === 4) {
-        console.log('response:', this.responseText);
+        //console.log('response:', this.responseText);
+        uploadRecording(upblob, filename,this.responseText)
       }
     }
     xhr.open("POST", "/upload", true);
@@ -114,39 +116,23 @@ function getUploadUrl(filename) {
     xhr.send(JSON.stringify({ filename: filename }));
 }
 
-function uploadRecording(){
-  //upload link
-  //var upload = document.createElement('a');
-  //upload.href="#";
-  //upload.innerHTML = "Upload";
-  //upload.addEventListener("click", function(event){
-  //    var xhr=new XMLHttpRequest();
-  //    xhr.onload=function(e) {
-  //        if(this.readyState === 4) {
-  //            console.log("Server returned: ",e.target.responseText);
-  //        }
-  //    };
-  //    var fd=new FormData();
-  //    fd.append("audio_data",blob, filename);
-  //    xhr.open("POST","upload.php",true);
-  //    xhr.send(fd);
-  //})
+function uploadRecording(blob, filename, url){
   var xhr=new XMLHttpRequest();
   xhr.onload=function(e) {
       if(this.readyState === 4) {
           console.log("Server returned: ",e.target.responseText);
       }
   };
-  var fd=new FormData();
-  fd.append("audio_data",blob, filename);
+  var file = new File([blob], filename, {type: 'audio/wav', lastModified: Date.now()});
   xhr.open("POST","upload.php",true);
-  xhr.send(fd);
+  x.open("PUT",url,true);
+  xhr.send(file);
   
 }
 
 
 function createDownloadLink(blob) {
-  
+  upblob = blob;
   var url = URL.createObjectURL(blob);
   var au = document.createElement('audio');
   var li = document.createElement('li');
@@ -158,15 +144,15 @@ function createDownloadLink(blob) {
   // unlikely but still want to avoid file name conflict for upload
   var randomSuffix = Math.random().toString(36).substr(2, 5);
 
-  var filename = dateStr+"."+randomSuffix+".wav";
+  var filename = dateStr+"."+randomSuffix+".wav ";
   //add controls to the <audio> element
   au.controls = true;
   au.src = url;
 
   //save to disk link
   link.href = url;
-  link.download = filename; //download forces the browser to donwload the file using the  filename
-  link.innerHTML = "download";
+  link.download = filename; //download forces the browser to donwload the file using the filename
+  link.innerHTML = " download";
 
   //add the new audio element to li
   li.appendChild(au);
@@ -179,6 +165,10 @@ function createDownloadLink(blob) {
   
   //add the li element to the ol
   recordingsList.appendChild(li);
+
+  // get the s3 presigned url for upload
+  getUploadUrl(filename);
+
 
   return filename;
 }
