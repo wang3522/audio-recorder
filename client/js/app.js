@@ -12,9 +12,25 @@ var audioContext //audio context to help us record
 var recordButton = document.getElementById("recordButton");
 var uploadButton = document.getElementById("uploadButton");
 
-//add events to those 2 buttons
-recordButton.addEventListener("click", startRecording);
-uploadButton.addEventListener("click", uploadRecording);
+
+window.onload = function () {
+    if (isGetUserMediaSupported()) {
+        //add events to those 2 buttons
+        recordButton.addEventListener("click", startRecording);
+        uploadButton.addEventListener("click", uploadRecording);
+    }
+    else {
+        window.location.href = "./unsupported.html";        
+    }
+
+};
+
+function isGetUserMediaSupported() {
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+    || !!(navigator.getUserMedia)
+    || !!(navigator.webkitGetUserMedia)
+    || !!(navigator.mozGetUserMedia);
+}
 
 function startRecording() {
   console.log("recordButton clicked");
@@ -74,7 +90,9 @@ function startRecording() {
           gumStream.getAudioTracks()[0].stop();
           recordButton.disabled = false;
           recordButton.innerHTML = "Record";
-          rec.exportWAV(createDownloadLink);
+          var filename = rec.exportWAV(createDownloadLink);
+          getUploadUrl(filename);
+
     })();
   }, reason => {
     console.log("user denied the access");
@@ -83,27 +101,48 @@ function startRecording() {
       //enable the record button if getUserMedia() fails
       recordButton.disabled = false;
       recordButton.innerHTML = "Record";
-
   });
+}
+
+function getUploadUrl(filename) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function(e) {
+      if(this.readState === 4) {
+        console.log('response:', this.responseText);
+      }
+    }
+    xhr.open("POST", "/upload", true);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify({ filename: filename }));
 }
 
 function uploadRecording(){
   //upload link
-  var upload = document.createElement('a');
-  upload.href="#";
-  upload.innerHTML = "Upload";
-  upload.addEventListener("click", function(event){
-      var xhr=new XMLHttpRequest();
-      xhr.onload=function(e) {
-          if(this.readyState === 4) {
-              console.log("Server returned: ",e.target.responseText);
-          }
-      };
-      var fd=new FormData();
-      fd.append("audio_data",blob, filename);
-      xhr.open("POST","upload.php",true);
-      xhr.send(fd);
-  })
+  //var upload = document.createElement('a');
+  //upload.href="#";
+  //upload.innerHTML = "Upload";
+  //upload.addEventListener("click", function(event){
+  //    var xhr=new XMLHttpRequest();
+  //    xhr.onload=function(e) {
+  //        if(this.readyState === 4) {
+  //            console.log("Server returned: ",e.target.responseText);
+  //        }
+  //    };
+  //    var fd=new FormData();
+  //    fd.append("audio_data",blob, filename);
+  //    xhr.open("POST","upload.php",true);
+  //    xhr.send(fd);
+  //})
+  var xhr=new XMLHttpRequest();
+  xhr.onload=function(e) {
+      if(this.readyState === 4) {
+          console.log("Server returned: ",e.target.responseText);
+      }
+  };
+  var fd=new FormData();
+  fd.append("audio_data",blob, filename);
+  xhr.open("POST","upload.php",true);
+  xhr.send(fd);
   
 }
 
@@ -116,28 +155,32 @@ function createDownloadLink(blob) {
   var link = document.createElement('a');
 
   //name of .wav file to use during upload and download (without extendion)
-  var filename = new Date().toISOString();
+  var dateStr = new Date().toISOString();
 
   // unlikely but still want to avoid file name conflict for upload
   var randomSuffix = Math.random().toString(36).substr(2, 5);
+
+  var filename = dateStr+"."+randomSuffix+".wav";
   //add controls to the <audio> element
   au.controls = true;
   au.src = url;
 
   //save to disk link
   link.href = url;
-  link.download = filename+"."+randomSuffix+".wav"; //download forces the browser to donwload the file using the  filename
+  link.download = filename; //download forces the browser to donwload the file using the  filename
   link.innerHTML = "download";
 
   //add the new audio element to li
   li.appendChild(au);
   
   //add the filename to the li
-  li.appendChild(document.createTextNode(filename+".wav "))
+  li.appendChild(document.createTextNode(filename))
 
   //add the save to disk link to li
   li.appendChild(link);
   
   //add the li element to the ol
   recordingsList.appendChild(li);
+
+  return filename;
 }
