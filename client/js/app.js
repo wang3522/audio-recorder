@@ -124,8 +124,7 @@ function uploadRecording(blob, filename, url){
       }
   };
   var file = new File([blob], filename, {type: 'audio/wav', lastModified: Date.now()});
-  xhr.open("POST","upload.php",true);
-  x.open("PUT",url,true);
+  xhr.open("PUT",url,true);
   xhr.send(file);
   
 }
