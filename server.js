@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 app.use(basicAuth({
     challenge: true,
-    users: { config.username: config.passwd }
+    users: { 'yummly': config.passwd }
 }));
 
 app.use(express.static('client'))
