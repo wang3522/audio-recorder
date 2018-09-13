@@ -24,7 +24,16 @@ body {
 }
 #controls {
   display: flex;
-  margin-top: 2rem;
+}
+.main-controls {
+  padding: 0.5rem 0;
+}
+canvas {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+#totalSamples {
+  padding: 1rem 0;  
 }
 button {
   flex-grow: 1;
@@ -60,6 +69,37 @@ button:disabled {
 }
 button:first-child {
   margin-left: 0;
+}
+button.delete {
+  background: #f00;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  height: 1.8rem;
+  margin-top: 0.3rem;
+}
+/* Make the clips use as much space as possible, and
+ * also show a scrollbar when there are too many clips to show
+ * in the available space */
+.sound-clips {
+  flex: 1;
+  overflow: auto;
+}
+section, article {
+  display: block;
+}
+.clip {
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+.clip p {
+  display: inline-block;
+  font-size: 1rem;
+}
+
+.clip button {
+  font-size: 1rem;
+  float: right;
 }
 audio {
   display: block;
