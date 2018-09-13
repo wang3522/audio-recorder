@@ -12,13 +12,14 @@ var audioContext //audio context to help us record
 var recordButton = document.getElementById("recordButton");
 var uploadButton = document.getElementById("uploadButton");
 
-var upblob;
+var samples = {};
+const MAX_SAMPLE = 10;
 
 window.onload = function () {
     if (isGetUserMediaSupported()) {
         //add events to those 2 buttons
         recordButton.addEventListener("click", startRecording);
-        uploadButton.addEventListener("click", uploadRecording);
+        uploadButton.addEventListener("click", uploadAll);
     }
     else {
         window.location.href = "./unsupported.html";        
@@ -27,14 +28,19 @@ window.onload = function () {
 };
 
 function isGetUserMediaSupported() {
-  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-    || !!(navigator.getUserMedia)
-    || !!(navigator.webkitGetUserMedia)
-    || !!(navigator.mozGetUserMedia);
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        || !!(navigator.getUserMedia)
+        || !!(navigator.webkitGetUserMedia)
+        || !!(navigator.mozGetUserMedia);
 }
 
 function startRecording() {
   console.log("recordButton clicked");
+  var num = Object.keys(samples).length;
+  if (num >= MAX_SAMPLE) {
+    alert('You have created '+num+' samples. Please upload them to the cloud server.')
+    return;
+  }
 
   /*
     Simple constraints object, for more advanced audio features see
@@ -48,7 +54,7 @@ function startRecording() {
   */
 
   recordButton.disabled = true;
-  recordButton.innerHTML = "Recording";
+  recordButton.innerHTML = "Recording...";
 
   /*
       We're using the standard promise based getUserMedia() 
@@ -86,7 +92,6 @@ function startRecording() {
     const sleep = time => new Promise(resolve => setTimeout(resolve, time));
     (async () => {        
           await sleep(4000);          
-          console.log("after sleep");
           rec.stop();
           gumStream.getAudioTracks()[0].stop();
           recordButton.disabled = false;
@@ -107,8 +112,9 @@ function getUploadUrl(filename) {
     var xhr = new XMLHttpRequest();
     xhr.onload = function(e) {
       if(this.readyState === 4) {
-        //console.log('response:', this.responseText);
-        uploadRecording(upblob, filename,this.responseText)
+        var uploadURL = JSON.parse(this.responseText)['upload_url'];
+        console.log('uploadURL '+uploadURL);
+        samples[filename]['url'] = uploadURL;
       }
     }
     xhr.open("POST", "/upload", true);
@@ -116,22 +122,36 @@ function getUploadUrl(filename) {
     xhr.send(JSON.stringify({ filename: filename }));
 }
 
+function uploadAll() {
+    if (Object.keys(samples).length < MAX_SAMPLE) {
+        alert('10 samples are required for upload');
+        return;
+    }
+    uploadButton.disabled = true;
+    uploadButton.innerHTML = "Uploading...";
+
+    for (var clip in samples) {
+        uploadRecording(samples[clip].blob, samples[clip], samples[clip].url);
+    }
+
+    uploadButton.disabled = false;
+    uploadButton.innerHTML = "Upload";
+    window.location.href = "./success.html";
+}
+
 function uploadRecording(blob, filename, url){
   var xhr=new XMLHttpRequest();
   xhr.onload=function(e) {
       if(this.readyState === 4) {
-          console.log("Server returned: ",e.target.responseText);
+          console.log('Upload '+filename+' finished');
       }
   };
   var file = new File([blob], filename, {type: 'audio/wav', lastModified: Date.now()});
   xhr.open("PUT",url,true);
-  xhr.send(file);
-  
+  xhr.send(file);  
 }
 
-
-function createDownloadLink(blob) {
-  upblob = blob;
+function createDownloadLink(blob) {  
   var url = URL.createObjectURL(blob);
   var au = document.createElement('audio');
   var li = document.createElement('li');
@@ -144,6 +164,9 @@ function createDownloadLink(blob) {
   var randomSuffix = Math.random().toString(36).substr(2, 5);
 
   var filename = dateStr+"."+randomSuffix+".wav ";
+
+  samples[filename] = {'blob': blob};
+
   //add controls to the <audio> element
   au.controls = true;
   au.src = url;
@@ -165,9 +188,11 @@ function createDownloadLink(blob) {
   //add the li element to the ol
   recordingsList.appendChild(li);
 
+  //update the number of samples
+  document.getElementById("totalSamples").innerHTML="You have created "+Object.keys(samples).length+" samples.";
+
   // get the s3 presigned url for upload
   getUploadUrl(filename);
-
 
   return filename;
 }
