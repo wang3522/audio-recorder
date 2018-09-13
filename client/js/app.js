@@ -14,6 +14,7 @@ var uploadButton = document.getElementById("uploadButton");
 
 var samples = {};
 const MAX_SAMPLE = 10;
+var succeeded = 0;
 
 window.onload = function () {
     if (isGetUserMediaSupported()) {
@@ -136,7 +137,7 @@ function uploadAll() {
 
     uploadButton.disabled = false;
     uploadButton.innerHTML = "Upload";
-    window.location.href = "./success.html";
+    
 }
 
 function uploadRecording(blob, filename, url){
@@ -144,6 +145,12 @@ function uploadRecording(blob, filename, url){
   xhr.onload=function(e) {
       if(this.readyState === 4) {
           console.log('Upload '+filename+' finished');
+          if (succeeded === MAX_SAMPLE-1) {
+            window.location.href = "./success.html";
+          }
+          else {
+            succeeded += 1;
+          }
       }
   };
   var file = new File([blob], filename, {type: 'audio/wav', lastModified: Date.now()});
