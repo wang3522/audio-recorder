@@ -1,0 +1,10 @@
+{
+  "name": "Wake Word Recorder",
+  "version": "0.0.1",
+  "dependencies": {
+    "body-parser": "^1.8.1",
+    "express": "^4.9.0",
+    "http-auth": "^3.2.0"
+  }
+}
+

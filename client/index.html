@@ -10,27 +10,20 @@
     <div><p></p></div>
     <h1>Yummly Wake Word Recorder</h1>
     
-    <p> Please record in a quiet room. Speak "yummly" clearly in 4 seconds.</p>
-    <p> You need to create 10 samples.</p>
-    <div id="totalSamples">You have created 0 samples.</div>
-    <div id="progress"><p></p></div>
+    <p> Welcome!.</p>
+    <p> Please make sure your Chrome or Firefox has the latest update.</p>
+    <p> Please check the microphone setting if there are multiple audio inputs. </p>
+    
 
     <section class="main-controls">
-      <canvas class="visualizer" height="60px"></canvas>
+      
       <div id="controls">
-           <button id="recordButton">Record</button>     
-           <button id="uploadButton">Upload</button>
+        <button onclick="location.href='/recorder'" type="button">Enter</button>
+           
       </div>
       
     </section>
     
-    <section class="sound-clips">
-
-    </section>
-
-    <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
-    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
-    <script src="js/app.js"></script>
     
   </body>
 </html>
